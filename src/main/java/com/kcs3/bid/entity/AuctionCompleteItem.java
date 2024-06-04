@@ -47,7 +47,7 @@ public class AuctionCompleteItem extends BaseEntity {
 
     @Column(nullable = false)
     private int startPrice;
-    private int buyNowPrice;
+    private Integer buyNowPrice;
 
     @Column(nullable = false)
     private LocalDateTime bidFinishTime;
