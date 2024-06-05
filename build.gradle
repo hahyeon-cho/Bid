@@ -72,7 +72,7 @@ tasks.named('test') {
 
 bootJar {
 	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-	mainClass = 'com.kcs3.panda.Application'
+	mainClass = 'com.kcs3.bid.BidApplication'
 }
 
 jar {
