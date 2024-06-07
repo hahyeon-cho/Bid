@@ -116,8 +116,7 @@ public class AuctionBidServiceImpl implements AuctionBidService {
     }//end updateAuctionProgressItemMaxBid()
 
     @Override
-    @Transactional
-    @Scheduled(cron = "30 * * * * *")  // 매 시간 정각에 실행
+    @Scheduled(cron = "0 0 * * * *")  // 매 시간 정각에 실행
     public void finishAuctionsByTime() {
         LocalDateTime now = LocalDateTime.now();
         Optional<List<AuctionProgressItem>> completedItemsOptional = auctionProgressItemRepo.findAllByBidFinishTimeBefore(now);
@@ -127,14 +126,15 @@ public class AuctionBidServiceImpl implements AuctionBidService {
             List<AuctionProgressItem> completedItems = completedItemsOptional.get();
             completedItems.forEach(this::transferItemToComplete);
         } else {
-            log.info("현재 경매 완료된 물품이 존재하지 않습니다.", now);
+            log.info("현재 경매 완료된 물품이 존재하지 않습니다. - {} ", now);
 
         }
 
 
     }//end transferCompletedAuctions()
 
-    private void transferItemToComplete(AuctionProgressItem item) {
+    @Transactional
+    protected void transferItemToComplete(AuctionProgressItem item) {
         try {
             boolean isComplete = checkBidCompletionStatus(item);
             AuctionCompleteItem completeItem = buildAuctionCompleteItem(item, isComplete);
