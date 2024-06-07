@@ -61,7 +61,7 @@ dependencies {
 
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
-
+	implementation 'io.netty:netty-all:4.1.109.Final'
 }
 
 tasks.named('test') {
