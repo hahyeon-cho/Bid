@@ -116,7 +116,7 @@ public class AuctionBidServiceImpl implements AuctionBidService {
     }//end updateAuctionProgressItemMaxBid()
 
     @Override
-    @Scheduled(cron = "0 0 * * * *")  // 매 시간 정각에 실행
+    @Scheduled(cron = "*/10 * * * * *")  // 매 시간 정각에 실행
     public void finishAuctionsByTime() {
         LocalDateTime now = LocalDateTime.now();
         Optional<List<AuctionProgressItem>> completedItemsOptional = auctionProgressItemRepo.findAllByBidFinishTimeBefore(now);
@@ -140,12 +140,12 @@ public class AuctionBidServiceImpl implements AuctionBidService {
             Item auctionItem = progressItem.getItem();
             auctionItem.endAuction();
 
-            saveAlarm(isComplete,completeItem);
-            createChatRoom(isComplete,completeItem);
-
             itemRepository.save(auctionItem);
             auctionCompleteItemRepo.save(completeItem);
             auctionProgressItemRepo.delete(progressItem);
+
+            saveAlarm(isComplete,completeItem);
+            createChatRoom(isComplete,completeItem);
         } catch (CommonException e) {
             log.error("에러 발생 물품 {}: {}", progressItem.getAuctionProgressItemId(), e.getMessage());
             throw e;
