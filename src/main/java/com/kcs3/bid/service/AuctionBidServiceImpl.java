@@ -129,17 +129,15 @@ public class AuctionBidServiceImpl implements AuctionBidService {
             log.info("현재 경매 완료된 물품이 존재하지 않습니다. - {} ", now);
 
         }
-
-
     }//end transferCompletedAuctions()
 
     @Transactional
-    protected void transferItemToComplete(AuctionProgressItem item) {
+    protected void transferItemToComplete(AuctionProgressItem progressItem) {
         try {
-            boolean isComplete = checkBidCompletionStatus(item);
-            AuctionCompleteItem completeItem = buildAuctionCompleteItem(item, isComplete);
+            boolean isComplete = checkBidCompletionStatus(progressItem);
+            AuctionCompleteItem completeItem = buildAuctionCompleteItem(progressItem, isComplete);
 
-            Item auctionItem = item.getItem();
+            Item auctionItem = progressItem.getItem();
             auctionItem.endAuction();
 
             saveAlarm(isComplete,completeItem);
@@ -147,12 +145,12 @@ public class AuctionBidServiceImpl implements AuctionBidService {
 
             itemRepository.save(auctionItem);
             auctionCompleteItemRepo.save(completeItem);
-            auctionProgressItemRepo.delete(item);
+            auctionProgressItemRepo.delete(progressItem);
         } catch (CommonException e) {
-            log.error("에러 발생 물품 {}: {}", item.getAuctionProgressItemId(), e.getMessage());
+            log.error("에러 발생 물품 {}: {}", progressItem.getAuctionProgressItemId(), e.getMessage());
             throw e;
         } catch (Exception e) {
-            log.error("에러 발생 물품 {}: {}", item.getAuctionProgressItemId(), e.getMessage());
+            log.error("에러 발생 물품 {}: {}", progressItem.getAuctionProgressItemId(), e.getMessage());
             throw new CommonException(ErrorCode.INTERNAL_SERVER_ERROR);
         }
     }//end transferItemToComplete()
