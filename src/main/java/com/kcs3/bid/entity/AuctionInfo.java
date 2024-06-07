@@ -33,8 +33,6 @@ public class AuctionInfo extends BaseEntity {
     @Column(name="auctionInfoId", nullable = false)
     private Long auctionInfoId;
 
-
-
     @ManyToOne(fetch= FetchType.LAZY)
     @JoinColumn(name = "userId")
     private User user;
@@ -44,5 +42,5 @@ public class AuctionInfo extends BaseEntity {
     private Item item;
 
     @Column(nullable = false)
-    private int bidPrice;
+    private Integer bidPrice;
 }

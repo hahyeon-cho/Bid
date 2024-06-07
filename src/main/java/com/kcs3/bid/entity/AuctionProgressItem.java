@@ -1,16 +1,8 @@
 package com.kcs3.bid.entity;
 
 import com.kcs3.bid.model.BaseEntity;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -47,9 +39,7 @@ public class AuctionProgressItem extends BaseEntity {
     private String thumbnail;
 
     @Column(nullable = false)
-    private int startPrice;
-
-    @Column(nullable = true)
+    private Integer startPrice;
     private Integer buyNowPrice;
 
     @Column(nullable = false)
@@ -66,6 +56,10 @@ public class AuctionProgressItem extends BaseEntity {
 
     @Column(nullable = false)
     private Integer maxPrice;
+
+    @Version
+    private Integer version;
+
 
     public static class AuctionProgressItemBuilder {
         public AuctionProgressItemBuilder startPrice(int startPrice) {

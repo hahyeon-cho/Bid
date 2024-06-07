@@ -31,6 +31,6 @@ public class User extends BaseEntity {
     @Column(nullable = false, length = 255, unique = true)  // 이메일 필드 추가
     private String userEmail;  // 이메일
 
-    @Column(nullable = false, columnDefinition = "int default 0")
-    private int userPoint;
+    @Column(nullable = false, columnDefinition = "integer default 0")
+    private Integer userPoint;
 }

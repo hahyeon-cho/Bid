@@ -46,7 +46,7 @@ public class AuctionCompleteItem extends BaseEntity {
     private String thumbnail;
 
     @Column(nullable = false)
-    private int startPrice;
+    private Integer startPrice;
     private Integer buyNowPrice;
 
     @Column(nullable = false)
