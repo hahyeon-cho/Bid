@@ -1,8 +1,6 @@
 package com.kcs3.bid.entity;
 
 import com.kcs3.bid.model.BaseEntity;
-import com.kcs3.bid.entity.LikeItem;
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -11,55 +9,32 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
-import java.util.List;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.hibernate.annotations.DynamicUpdate;
 
 @Entity
-@Table(name = "Item")
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
-@EqualsAndHashCode(callSuper = true)
 @DynamicUpdate
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Item extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name="itemId", nullable = false)
+    @Column(nullable = false)
     private Long itemId;
 
-    @OneToMany(mappedBy = "item", cascade = CascadeType.REMOVE) // 찜 삭제 설정
-    private List<LikeItem> likeItems;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "sellerId")
+    // === Core Relationships ===
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "seller_id", nullable = false)
     private User seller;
 
-    @ManyToOne
-    @JoinColumn(name = "categoryId", nullable = false)
-    private Category category;
-
-    @ManyToOne
-    @JoinColumn(name = "tradingMethodId", nullable = false)
-    private TradingMethod tradingMethod;
-
-    @ManyToOne
-    @JoinColumn(name = "regionId", nullable = false)
-    private Region region;
-
+    // === Basic column ===
     @Column(nullable = false)
     private boolean isAuctionComplete;
 
+    // === Add & Update ===
     public void endAuction() {
         this.isAuctionComplete = true;
     }

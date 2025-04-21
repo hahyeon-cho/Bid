@@ -6,31 +6,36 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import lombok.AllArgsConstructor;
+import lombok.AccessLevel;
 import lombok.Builder;
-import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@EqualsAndHashCode(callSuper = true)
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
-@Data
 @Entity
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@EqualsAndHashCode(callSuper = true)
 public class User extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name="userId", nullable = false)
+    @Column(nullable = false)
     private Long userId;
 
     @Column(nullable = false, length = 255)
-    private String userNickname;
+    private String nickname;
 
-    @Column(nullable = false, length = 255, unique = true)  // 이메일 필드 추가
-    private String userEmail;  // 이메일
+    @Column(nullable = false, length = 255, unique = true)
+    private String email;
 
-    @Column(nullable = false, columnDefinition = "integer default 0")
-    private Integer userPoint;
+    @Column(nullable = false, columnDefinition = "int default 0")
+    private int userPoint;
+
+    @Builder
+    public User(String nickname, String email, int userPoint) {
+        this.nickname = nickname;
+        this.email = email;
+        this.userPoint = userPoint;
+    }
 }

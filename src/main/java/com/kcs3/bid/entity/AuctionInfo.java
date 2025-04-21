@@ -9,38 +9,36 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
+import lombok.AccessLevel;
 import lombok.Builder;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.DynamicUpdate;
-
 
 @Entity
-@Table(name = "AuctionInfo")
 @Getter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
-@EqualsAndHashCode(callSuper = true)
-@DynamicUpdate
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class AuctionInfo extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name="auctionInfoId", nullable = false)
+    @Column(nullable = false)
     private Long auctionInfoId;
 
-    @ManyToOne(fetch= FetchType.LAZY)
-    @JoinColumn(name = "userId")
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="itemId")
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "item_id", nullable = false)
     private Item item;
 
     @Column(nullable = false)
     private Integer bidPrice;
+
+    @Builder
+    public AuctionInfo(User user, Item item, Integer bidPrice) {
+        this.user = user;
+        this.item = item;
+        this.bidPrice = bidPrice;
+    }
 }
