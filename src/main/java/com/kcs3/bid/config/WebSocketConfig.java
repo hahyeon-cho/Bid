@@ -10,18 +10,18 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
-    // 웹 소켓 엔드포인트 등록
+    // 웹소켓 연결을 위한 엔드포인트 등록
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/ws").setAllowedOrigins("*");;
+        registry.addEndpoint("/ws").setAllowedOrigins("*");
     }
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
-
-        // room으로 시작되는 요청을 구독한 모든 사용자들에게 메시지를 broadcast한다.
+        // "/room"으로 시작하는 요청을 구독한 모든 사용자에게 메시지를 전달
         registry.enableSimpleBroker("/room");
-        // message로 시작되는 메시지는 message-handling methods로 라우팅된다.
+
+        // 사용자가 "/message/**" 경로로 보낸 메세지를 컨트롤러에서 처리
         registry.setApplicationDestinationPrefixes("/message");
     }
 }
