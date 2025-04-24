@@ -1,65 +1,58 @@
 package com.kcs3.bid.service;
 
-import com.kcs3.bid.dto.AuctionInfoSummeryDto;
-import com.kcs3.bid.dto.AuctionInfosDto;
+import com.kcs3.bid.dto.AuctionInfoDto;
+import com.kcs3.bid.dto.AuctionInfoResponseDto;
 import com.kcs3.bid.dto.AuctionPriceDto;
+import com.kcs3.bid.dto.AuctionPriceRawDto;
 import com.kcs3.bid.entity.Item;
+import com.kcs3.bid.exception.CommonException;
+import com.kcs3.bid.exception.ErrorCode;
 import com.kcs3.bid.repository.AuctionCompleteItemRepository;
 import com.kcs3.bid.repository.AuctionInfoRepository;
 import com.kcs3.bid.repository.AuctionProgressItemRepository;
 import com.kcs3.bid.repository.ItemRepository;
-import com.kcs3.bid.exception.CommonException;
-import com.kcs3.bid.exception.ErrorCode;
+import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-
 @Service
-@Slf4j
-public class AuctionInfoServiceImpl implements AuctionInfoService{
-    @Autowired
-    private AuctionProgressItemRepository auctionProgressItemRepo;
-    @Autowired
-    private AuctionCompleteItemRepository auctionCompleteItemRepo;
-    @Autowired
-    private AuctionInfoRepository auctionInfoRepo;
-    @Autowired
-    private ItemRepository itemRepository;
+@RequiredArgsConstructor
+public class AuctionInfoServiceImpl implements AuctionInfoService {
+
+    private final ItemRepository itemRepository;
+    private final AuctionProgressItemRepository auctionProgressItemRepo;
+    private final AuctionCompleteItemRepository auctionCompleteItemRepo;
+    private final AuctionInfoRepository auctionInfoRepo;
 
     @Override
     @Transactional(readOnly = true)
-    public Optional<AuctionInfosDto> getAuctionInfosDto(Long itemId) {
-        log.debug("경매 내역 조회 - 물품 ID : {}", itemId);
-
+    public AuctionInfoResponseDto getAuctionInfosByItemId(Long itemId) {
         Item item = itemRepository.findById(itemId)
-                .orElseThrow(() -> new CommonException(ErrorCode.ITEM_NOT_FOUND));
+            .orElseThrow(() -> new CommonException(ErrorCode.ITEM_NOT_FOUND));
 
-        Optional<AuctionPriceDto> optionalAuctionPriceDto;
-        if (item.isAuctionComplete()) {
-            optionalAuctionPriceDto = auctionCompleteItemRepo.findPriceByItemItemId(itemId);
+        AuctionPriceRawDto rawPriceDto;
+        if (!item.isAuctionComplete()) {
+            rawPriceDto = auctionProgressItemRepo.findAuctionPriceByItemId(itemId)
+                .orElseThrow(() -> new CommonException(ErrorCode.AUCTION_PRICE_NOT_FOUND));
         } else {
-            optionalAuctionPriceDto = auctionProgressItemRepo.findPriceByItemItemId(itemId);
+            rawPriceDto = auctionCompleteItemRepo.findAuctionPriceByItemId(itemId)
+                .orElseThrow(() -> new CommonException(ErrorCode.AUCTION_PRICE_NOT_FOUND));
         }
 
-        if (optionalAuctionPriceDto.isEmpty()) {
-            throw new CommonException(ErrorCode.AUCTION_PRICE_NOT_FOUND);
+        // 현재 최대 입찰자가 존재하는 경우에만 경매 내역 조회 (존재하지 않을 경우 경매 내역이 없음)
+        List<AuctionInfoDto> auctionInfos = Collections.emptyList();
+         if (rawPriceDto.maxBidUserNickname() != null) {
+            auctionInfos = auctionInfoRepo.findInfosByItemId(itemId);
+            if (auctionInfos.isEmpty()) {
+                throw new CommonException(ErrorCode.AUCTION_HISTORY_NOT_FOUND);
+            }
         }
-        AuctionPriceDto auctionPriceDto = optionalAuctionPriceDto.get();
 
-        List<AuctionInfoSummeryDto> auctionInfoSummaries = auctionInfoRepo
-                .findInfoSummariesByItemId(itemId);
-
-        AuctionInfosDto auctionInfosDto = AuctionInfosDto.builder()
-                .info(auctionInfoSummaries)
-                .buyNowPrice(auctionPriceDto.buyNowPrice())
-                .maxPrice(auctionPriceDto.maxPrice())
-                .auctionPriceDto(auctionPriceDto)
-                .build();
-
-        return Optional.of(auctionInfosDto);
-    }//getAuctionInfos()
-}//end class
+        return AuctionInfoResponseDto.builder()
+            .infos(auctionInfos)
+            .price(AuctionPriceDto.from(rawPriceDto)) // 가격 정보만 응답에 포함
+            .build();
+    }
+}

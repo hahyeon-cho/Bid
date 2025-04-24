@@ -55,6 +55,7 @@ public enum ErrorCode {
     ITEM_ANSWER_NOT_FOUND(40411, HttpStatus.NOT_FOUND, "해당 답글 정보를 찾을 수 없습니다."),
     ITEM_CACHE_NOT_FOUND(40412, HttpStatus.NOT_FOUND, "캐시에 저장된 경매 물품 리스트를 찾을 수 없습니다."),
     AUCTION_PRICE_NOT_FOUND(404013, HttpStatus.NOT_FOUND, "경매 가격 정보를 찾을 수 없습니다."),
+    AUCTION_HISTORY_NOT_FOUND(404013, HttpStatus.NOT_FOUND, "물품의 경매 내역을 찾을 수 없습니다."),
 
     // 405 - Method Not Allowed
     METHOD_NOT_ALLOWED(40500, HttpStatus.METHOD_NOT_ALLOWED, "지원하지 않는 HTTP 메소드입니다."),
