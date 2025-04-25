@@ -27,23 +27,6 @@ public class AuctionBidController {
     private AuctionBidService auctionBidService;
 
     /**
-     * 경매 입찰 내역 표시
-     * @return ResponseEntity<ResponseDto<String>> 입찰 결과
-     */
-    @GetMapping("/{itemId}/bid")
-    public ResponseDto<?> getAuctionBids(@PathVariable Long itemId) {
-        try {
-            AuctionInfosDto auctionInfosDto = auctionInfoService.getAuctionInfosDto(itemId)
-                    .orElseThrow(() -> new CommonException(ErrorCode.AUCTION_PRICE_NOT_FOUND));
-
-            return ResponseDto.ok(auctionInfosDto);
-        } catch (CommonException e) {
-            return ResponseDto.fail(e);
-        } catch (Exception e) {
-            throw new CommonException(ErrorCode.INTERNAL_SERVER_ERROR);
-        }
-    }
-
     /**
      * 경매 입찰 참여 API
      * @return ResponseDto<String> 입찰 결과
