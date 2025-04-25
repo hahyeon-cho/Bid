@@ -27,9 +27,11 @@ public class AuctionBidController {
     private AuctionBidService auctionBidService;
 
     /**
-    /**
-     * 경매 입찰 참여 API
-     * @return ResponseDto<String> 입찰 결과
+     * 경매 물품에 관한 입찰 진행
+     *
+     * @param itemId               입찰할 경매 물품 ID
+     * @param auctionBidRequestDto 입찰 가격 요청 DTO
+     * @return 입찰 성공 여부
      */
     @PostMapping("/{itemId}/bid")
     public ResponseDto<?> submitBid(@PathVariable Long itemId,
