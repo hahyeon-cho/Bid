@@ -29,6 +29,7 @@ public interface AuctionProgressItemRepository extends JpaRepository<AuctionProg
             "WHERE api.auctionProgressItemId = :auctionProgressItemId")
     Optional<AuctionBidHighestDto> findHighestBidByAuctionProgressItemId(@Param("auctionProgressItemId") Long auctionProgressItemId);
 
+    // 현재 시간 기준으로 경매 완료 처리되어야하는 물품 목록 조회
     @Query("SELECT api FROM AuctionProgressItem api JOIN FETCH api.item WHERE api.bidFinishTime < :now")
     Optional<List<AuctionProgressItem>> findAllByBidFinishTimeBefore(LocalDateTime now);
 }

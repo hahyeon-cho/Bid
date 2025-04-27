@@ -6,8 +6,4 @@ public interface AuctionBidService {
      */
     boolean attemptBid(Long itemId, Long userId, String nickname, int bidPrice) throws Exception;
 
-    /**
-     * 시간에 따른 경매 완료
-     */
-    void finishAuctionsByTime();
 }
