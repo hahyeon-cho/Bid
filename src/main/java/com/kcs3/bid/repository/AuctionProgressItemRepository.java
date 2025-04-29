@@ -22,12 +22,14 @@ public interface AuctionProgressItemRepository extends JpaRepository<AuctionProg
         """)
     Optional<AuctionPriceRawDto> findAuctionPriceByItemId(@Param("itemId") Long itemId);
 
-    @Query("SELECT new com.kcs3.bid.dto.AuctionBidHighestDto(" +
-                "api.auctionProgressItemId, user.userId, user.userNickname, api.maxPrice) " +
-            "FROM AuctionProgressItem api " +
-            "LEFT JOIN api.user user " +
-            "WHERE api.auctionProgressItemId = :auctionProgressItemId")
-    Optional<AuctionBidHighestDto> findHighestBidByAuctionProgressItemId(@Param("auctionProgressItemId") Long auctionProgressItemId);
+    // 물품 ID로 경매 진행 테이블에서 최고 입찰자까지 함께 조회
+    @Query("""
+        SELECT api
+        FROM AuctionProgressItem api
+        LEFT JOIN FETCH api.maxBidUser
+        WHERE api.item.itemId = :itemId
+        """)
+    Optional<AuctionProgressItem> findProgressItemWithMaxBidUserByItemId(@Param("itemId") Long itemId);
 
     // 현재 시간 기준으로 경매 완료 처리되어야하는 물품 목록 조회
     @Query("SELECT api FROM AuctionProgressItem api JOIN FETCH api.item WHERE api.bidFinishTime < :now")

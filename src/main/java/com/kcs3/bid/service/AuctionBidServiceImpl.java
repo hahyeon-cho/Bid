@@ -1,119 +1,83 @@
 package com.kcs3.bid.service;
 
-import com.kcs3.bid.dto.AuctionBidHighestDto;
-import com.kcs3.bid.entity.Alarm;
-import com.kcs3.bid.entity.AuctionCompleteItem;
 import com.kcs3.bid.entity.AuctionInfo;
 import com.kcs3.bid.entity.AuctionProgressItem;
-import com.kcs3.bid.entity.ChattingRoom;
 import com.kcs3.bid.entity.Item;
-import com.kcs3.bid.repository.AlarmRepository;
-import com.kcs3.bid.repository.AuctionCompleteItemRepository;
-import com.kcs3.bid.repository.AuctionInfoRepository;
-import com.kcs3.bid.repository.AuctionProgressItemRepository;
-import com.kcs3.bid.repository.ChattingRoomRepository;
-import com.kcs3.bid.repository.ItemRepository;
 import com.kcs3.bid.entity.User;
-import com.kcs3.bid.repository.UserRepository;
 import com.kcs3.bid.exception.CommonException;
 import com.kcs3.bid.exception.ErrorCode;
-import jakarta.persistence.EntityNotFoundException;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
+import com.kcs3.bid.repository.AuctionInfoRepository;
+import com.kcs3.bid.repository.AuctionProgressItemRepository;
+import com.kcs3.bid.repository.ItemRepository;
+import com.kcs3.bid.utils.AuthUserProvider;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-@Slf4j
 @Service
+@RequiredArgsConstructor
+@Slf4j
 public class AuctionBidServiceImpl implements AuctionBidService {
-    @Autowired
-    private AuctionProgressItemRepository auctionProgressItemRepo;
-    @Autowired
-    private AuctionCompleteItemRepository auctionCompleteItemRepo;
-    @Autowired
-    private AuctionInfoRepository auctionInfoRepo;
-    @Autowired
-    private ItemRepository itemRepository;
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private AlarmRepository alarmRepository;
-    @Autowired
-    private ChattingRoomRepository chattingRoomRepository;
 
+    private final AuthUserProvider authUserProvider;
+    private final AuctionCompleteService auctionCompleteService;
 
+    private final ItemRepository itemRepository;
+    private final AuctionProgressItemRepository progressItemRepository;
+    private final AuctionInfoRepository auctionInfoRepository;
+
+    // 입찰 참여
     @Override
     @Transactional
-    public boolean attemptBid(Long itemId, Long userId, String nickname, int bidPrice) {
-        AuctionProgressItem progressItem = auctionProgressItemRepo.findByItemItemId(itemId)
-                .orElseThrow(() -> new CommonException(ErrorCode.ITEM_NOT_FOUND));
+    public void attemptBid(Long itemId, int bidPrice) {
+        User user = authUserProvider.getCurrentUser();
 
-        Long sellerId = itemRepository.findSellerIdByItemId(itemId);
-        if (sellerId.equals(userId)) {
+        Item item = itemRepository.findItemWithSellerByItemId(itemId)
+            .orElseThrow(() -> new CommonException(ErrorCode.ITEM_NOT_FOUND));
+
+        if (user.getUserId().equals(item.getSeller().getUserId())) {
             throw new CommonException(ErrorCode.BIDDER_IS_SELLER);
         }
 
-        if (progressItem.getBuyNowPrice() !=null && bidPrice >= progressItem.getBuyNowPrice()) {
-            log.debug("User {}가 Item {}을 즉시 구매 - 가격: {}", itemId, userId, bidPrice);
+        AuctionProgressItem progressItem = progressItemRepository.findProgressItemWithMaxBidUserByItemId(itemId)
+            .orElseThrow(() -> new CommonException(ErrorCode.ITEM_NOT_FOUND));
 
-            saveAuctionInfo(itemId, userId, bidPrice);
-            updateAuctionProgressItemMaxBid(progressItem, userId, nickname, bidPrice);
-            transferItemToComplete(progressItem);
-            return true;
+        // 즉시 구매
+        if (progressItem.getBuyNowPrice() != null && bidPrice >= progressItem.getBuyNowPrice()) {
+            log.debug("User {}가 Item {}을 즉시 구매 - 가격: {}", user.getUserId(), itemId, bidPrice);
+
+            registerBid(item, user, progressItem, bidPrice);
+            auctionCompleteService.completeAuction(progressItem);
+            return;
         }
 
-        Optional<AuctionBidHighestDto> highestBid
-                = auctionProgressItemRepo.findHighestBidByAuctionProgressItemId(progressItem.getAuctionProgressItemId());
+        // 현재 최고 입찰자 & 최고 가격 비교
+        Long maxBidUserId = progressItem.getMaxBidUser().getUserId();
 
-        highestBid.ifPresentOrElse(
-                hbid -> {
-                    if (hbid.userId() != null && userId.equals(hbid.userId())) {
-                        throw new CommonException(ErrorCode.BIDDER_IS_SAME);
-                    }
-
-                    if ((hbid.userId() != null && bidPrice <= hbid.maxPrice()) ||
-                            (hbid.userId() == null && bidPrice < hbid.maxPrice())) {
-                        throw new CommonException(ErrorCode.BID_NOT_HIGHER);
-                    }
-                },
-                () -> {
-                    throw new CommonException(ErrorCode.AUCTION_PRICE_NOT_FOUND);
-                }
-        );
-
-        saveAuctionInfo(itemId, userId, bidPrice);
-        updateAuctionProgressItemMaxBid(progressItem, userId, nickname, bidPrice);
-        return true;
-    }//end attemptBid()
-
-    private void saveAuctionInfo(Long itemId, Long userId, int price) {
-        Item item = itemRepository.getReferenceById(itemId);    //프록시 객체 참조
-        User user = userRepository.getReferenceById(userId);
-
-        try {
-            item.getItemId();
-            user.getUserId();
-        } catch (EntityNotFoundException e) {
-            throw new CommonException(ErrorCode.NOT_FOUND_RESOURCE);
+        if (maxBidUserId != null) {
+            if (user.getUserId().equals(maxBidUserId)) {
+                throw new CommonException(ErrorCode.BIDDER_IS_CURRENT_HIGHEST);
+            }
+            if (bidPrice <= progressItem.getMaxPrice()) {
+                throw new CommonException(ErrorCode.BID_PRICE_TOO_LOW);
+            }
+        } else if (bidPrice < progressItem.getMaxPrice()) {
+            throw new CommonException(ErrorCode.BID_PRICE_TOO_LOW);
         }
 
+        registerBid(item, user, progressItem, bidPrice);
+    }
+
+    private void registerBid(Item item, User user, AuctionProgressItem progressItem, int bidPrice) {
         AuctionInfo auctionInfo = AuctionInfo.builder()
-                .item(item)
-                .user(user)
-                .bidPrice(price)
-                .build();
-        auctionInfoRepo.save(auctionInfo);
-    }//end saveAuctionInfo()
+            .item(item)
+            .user(user)
+            .bidPrice(bidPrice)
+            .build();
+        auctionInfoRepository.save(auctionInfo);
 
-    private void updateAuctionProgressItemMaxBid(AuctionProgressItem progressItem, Long userId, String nickname, int bidPrice) {
-        User user = userRepository.getReferenceById(userId);
-        progressItem.updateAuctionMaxBid(user, nickname, bidPrice);
-        auctionProgressItemRepo.save(progressItem);
-    }//end updateAuctionProgressItemMaxBid()
-
+        progressItem.updateAuctionMaxBid(user, user.getNickname(), bidPrice);
+        progressItemRepository.save(progressItem);
     }
 }
