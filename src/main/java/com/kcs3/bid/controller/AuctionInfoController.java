@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/auth/auction/item")
+@RequestMapping("/api/v1/no-auth/auction/item")
 public class AuctionInfoController {
 
     private final AuctionInfoService auctionInfoService;
