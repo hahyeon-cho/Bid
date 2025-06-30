@@ -1,11 +1,14 @@
+# 경매 서비스 APi 목록
 52panda 플랫폼의 경매 서비스에서 제공하는 API 목록입니다.
 - Base URL: `/api/v1`
 - 공통 응답 구조: `{ success, data, error }`  
 ※ 아래 예시에서는 data 필드의 내부 값만 표시합니다.
 
+---
+
 ### 입찰 요청
 POST /auth/auction/item/{itemId}/bid
-```
+```Json
 req body
 {
   "bidPrice": 10000
@@ -14,7 +17,7 @@ req body
 
 ### 입찰 내역 조회
 GET /no-auth/auction/item/{itemId}/bid
-```
+```Json
 res body
 {
   "infos": [
