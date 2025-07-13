@@ -1,8 +1,8 @@
 ![header](https://capsule-render.vercel.app/api?type=waving&&height=200&text=경매%20서비스&fontAlign=80&fontAlignY=40&color=gradient&customColorList=23)
 
 ## 📎 관련 문서
-- [📄 경매 서비스 API 명세서](./docs/api-summary.md)
-- <a href="https://hahyeon-cho.notion.site/52panda-1f0a0fd714508061b9e5c86faad933ee?pvs=74">
+- [📄 경매 서비스 API 문서](./docs/api-summary.md)
+- <a href="https://hahyeon-cho.notion.site/52panda-22fa0fd71450808a8b54e8a86253c989">
   <img src="https://upload.wikimedia.org/wikipedia/commons/4/45/Notion_app_logo.png" alt="Notion" width="18" height="18" style="vertical-align:middle;"/> 
   Notion 포트폴리오 </a>
 <br>
@@ -34,7 +34,7 @@
 ## ◾서비스 구조
 경매 서비스의 입찰 처리 및 경매 마감 흐름은 다음과 같습니다.
 
-<img src="https://github.com/user-attachments/assets/0a7d5b0f-b249-4bbe-82a3-d4120f7135aa" alt="Sequence_01" width="58%" height="58%" padding="50px"/> 
+<img src="https://github.com/user-attachments/assets/0a7d5b0f-b249-4bbe-82a3-d4120f7135aa" alt="Sequence_01" width="58%" height="58%"/> 
 <br>
 <br>
 <br>
@@ -50,7 +50,7 @@
 | POST    | /{itemId}/bid     | 경매 물품에 관한 입찰 진행          |
 | GET     | /{itemId}/bid     | 경매 입찰 내역 조회                |
 
-> 자세한 내용은 [경매 서비스 API 명세서](./docs/api-summary.md)에서 확인할 수 있습니다.
+> 자세한 내용은 [경매 서비스 API 문서](./docs/api-summary.md)에서 확인할 수 있습니다.
 <br>
 
 ## ◾기능 상세
@@ -63,4 +63,4 @@
 
 ## ◾트러블슈팅 및 성능 개선
 > 본 프로젝트 전반에 걸친 주요 문제 해결 사례와 성능 개선 내역은  
-[포트폴리오 페이지 내 '주요 문제 상황 및 해결'](https://hahyeon-cho.notion.site/52panda-1f0a0fd714508061b9e5c86faad933ee#1f0a0fd7145080c68c20c8f15f4415d3)에서 확인하실 수 있습니다.
+[포트폴리오 페이지 내 '주요 문제 상황 및 해결'](https://hahyeon-cho.notion.site/52panda-22fa0fd71450808a8b54e8a86253c989#22fa0fd7145080fb8df9d7dd36e3181e)에서 확인하실 수 있습니다.
